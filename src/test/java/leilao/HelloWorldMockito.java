@@ -15,5 +15,7 @@ public class HelloWorldMockito {
 		var returnList = mockLeilaoDao.buscarTodos();
 		assertTrue(returnList.isEmpty());
 	}
+	
+	//alterando
 
 }
