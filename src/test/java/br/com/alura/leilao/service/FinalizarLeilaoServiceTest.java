@@ -23,15 +23,18 @@ class FinalizarLeilaoServiceTest {
 
 	@Mock
 	LeilaoDao leilaoDao;
+	
+	@Mock
+	EnviadorDeEmails enviadorDeEmails;
 
 	@BeforeEach
 	public void init() {
 		MockitoAnnotations.initMocks(this);
-		this.service = new FinalizarLeilaoService(leilaoDao);
+		this.service = new FinalizarLeilaoService(leilaoDao, enviadorDeEmails);
 	}
 
 	@Test
-	void test_deveriaFinalizarUmLeilao() {
+	void test_deveriaFinalizarUmLeilaoEEnviarEmail() {
 		var leiloes = leiloes();
 		assertTrue(leiloes.size() == 1);
 		
@@ -45,6 +48,8 @@ class FinalizarLeilaoServiceTest {
 		assertTrue(leilao.getLanceVencedor().getValor().equals(new BigDecimal("900")));
 		
 		Mockito.verify(leilaoDao).salvar(leilao);
+		
+		Mockito.verify(enviadorDeEmails).enviarEmailVencedorLeilao(leilao.getLanceVencedor());
 	}
 
 	private List<Leilao> leiloes() {
