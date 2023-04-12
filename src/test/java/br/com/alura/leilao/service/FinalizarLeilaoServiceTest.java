@@ -1,6 +1,7 @@
 package br.com.alura.leilao.service;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ class FinalizarLeilaoServiceTest {
 
 	@Mock
 	LeilaoDao leilaoDao;
-	
+
 	@Mock
 	EnviadorDeEmails enviadorDeEmails;
 
@@ -37,19 +38,35 @@ class FinalizarLeilaoServiceTest {
 	void test_deveriaFinalizarUmLeilaoEEnviarEmail() {
 		var leiloes = leiloes();
 		assertTrue(leiloes.size() == 1);
-		
+
 		Mockito.when(leilaoDao.buscarLeiloesExpirados()).thenReturn(leiloes);
-		
+
 		service.finalizarLeiloesExpirados();
-		
+
 		var leilao = leiloes.get(0);
-		
+
 		assertTrue(leilao.isFechado());
 		assertTrue(leilao.getLanceVencedor().getValor().equals(new BigDecimal("900")));
-		
+
 		Mockito.verify(leilaoDao).salvar(leilao);
-		
+
 		Mockito.verify(enviadorDeEmails).enviarEmailVencedorLeilao(leilao.getLanceVencedor());
+	}
+
+	@Test
+	void test_naoDeveriaEnviarEmailAoVencedorEmCasoDeErro() {
+		var leiloes = leiloes();
+
+		Mockito.when(leilaoDao.buscarLeiloesExpirados()).thenReturn(leiloes);
+		
+		Mockito.when(leilaoDao.salvar(any())).thenThrow(RuntimeException.class);
+
+		try {
+			service.finalizarLeiloesExpirados();
+			Mockito.verifyNoInteractions(enviadorDeEmails);
+		} catch (Exception e) {
+		}
+		
 	}
 
 	private List<Leilao> leiloes() {
