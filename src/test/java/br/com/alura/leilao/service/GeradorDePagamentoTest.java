@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -62,6 +63,54 @@ class GeradorDePagamentoTest {
 		var pagamento = pagamentoCaptor.getValue();
 		
 		assertEquals(LocalDate.of(2023, 12, 8), pagamento.getVencimento());
+		assertTrue(pagamento.getUsuario().getNome().contains(lanceVencedor.getUsuario().getNome()));
+		assertEquals(lanceVencedor.getValor(), pagamento.getValor());
+		assertFalse(pagamento.getPago());
+		assertEquals(leilao, pagamento.getLeilao());
+	}
+	
+	@Test
+	void test_deveriaCriarPagamentoParaVencedorDoLeilaoQuandoVencimentoCaiNoSabado() {
+		var leilao = leilao();
+		var lanceVencedor = leilao.getLanceVencedor();
+		
+		var data = LocalDate.of(2023, 4, 15).atStartOfDay(ZoneId.systemDefault()).toInstant();
+		
+		when(clock.instant()).thenReturn(data);
+		when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+		
+		geradorDePagamento.gerarPagamento(lanceVencedor);
+		
+		verify(pagamentoDao).salvar(pagamentoCaptor.capture());
+		
+		var pagamento = pagamentoCaptor.getValue();
+		
+		assertEquals(DayOfWeek.MONDAY, LocalDate.of(2023, 4, 17).getDayOfWeek());
+		assertEquals(LocalDate.of(2023, 4, 17), pagamento.getVencimento());
+		assertTrue(pagamento.getUsuario().getNome().contains(lanceVencedor.getUsuario().getNome()));
+		assertEquals(lanceVencedor.getValor(), pagamento.getValor());
+		assertFalse(pagamento.getPago());
+		assertEquals(leilao, pagamento.getLeilao());
+	}
+	
+	@Test
+	void test_deveriaCriarPagamentoParaVencedorDoLeilaoQuandoVencimentoCaiNoDomingo() {
+		var leilao = leilao();
+		var lanceVencedor = leilao.getLanceVencedor();
+		
+		var data = LocalDate.of(2023, 4, 23).atStartOfDay(ZoneId.systemDefault()).toInstant();
+		
+		when(clock.instant()).thenReturn(data);
+		when(clock.getZone()).thenReturn(ZoneId.systemDefault());
+		
+		geradorDePagamento.gerarPagamento(lanceVencedor);
+		
+		verify(pagamentoDao).salvar(pagamentoCaptor.capture());
+		
+		var pagamento = pagamentoCaptor.getValue();
+		
+		assertEquals(DayOfWeek.MONDAY, LocalDate.of(2023, 4, 24).getDayOfWeek());
+		assertEquals(LocalDate.of(2023, 4, 24), pagamento.getVencimento());
 		assertTrue(pagamento.getUsuario().getNome().contains(lanceVencedor.getUsuario().getNome()));
 		assertEquals(lanceVencedor.getValor(), pagamento.getValor());
 		assertFalse(pagamento.getPago());

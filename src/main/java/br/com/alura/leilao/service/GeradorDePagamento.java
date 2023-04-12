@@ -32,9 +32,9 @@ public class GeradorDePagamento {
 	private static LocalDate proximoDiaUtil(LocalDate dataBase) {
 		var diaDaSemana = dataBase.getDayOfWeek();
 		if(diaDaSemana.equals(DayOfWeek.SATURDAY)) {
-			dataBase.plusDays(2);
-		} else if (diaDaSemana.equals(DayOfWeek.MONDAY)) {
-			dataBase.plusDays(1);
+			return dataBase.plusDays(2);
+		} else if (diaDaSemana.equals(DayOfWeek.SUNDAY)) {
+			return dataBase.plusDays(1);
 		}
 		return dataBase;
 	}
