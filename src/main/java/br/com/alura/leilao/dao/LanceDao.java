@@ -17,6 +17,7 @@ public class LanceDao {
 	public LanceDao(EntityManager em) {
 		this.em = em;
 	}
+	
 	public void salvar(Lance lance) {
 		em.persist(lance);
 	}
